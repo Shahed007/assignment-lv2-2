@@ -1,11 +1,14 @@
+-- Create Database
 CREATE DATABASE conservation_db;
 
+-- Create ranger Table
 CREATE TABLE rangers (
     ranger_id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     region TEXT NOT NULL
 );
 
+-- Create species Table
 CREATE TABLE species (
     species_id SERIAL PRIMARY KEY,
     common_name TEXT NOT NULL,
@@ -13,6 +16,8 @@ CREATE TABLE species (
     discovery_date DATE NOT NULL,
     conservation_status TEXT   -- Endangered  || Vulnerable
 );
+
+-- Create sightings Table
 
 CREATE TABLE sightings (
     sighting_id SERIAL PRIMARY KEY,
@@ -73,6 +78,7 @@ SELECT *
     FROM sightings
     WHERE location ILIKE '%Pass%';
 
+-- List each ranger's name and their total number of sightings.
 SELECT 
   r.name AS name,
   COUNT(s.sighting_id) AS total_sightings
@@ -103,8 +109,8 @@ LIMIT 2;
 
 -- Update all species discovered before year 1800 to have status 'Historic'.
 UPDATE species
-SET status = 'Historic'
-WHERE discovery_year < 1800;
+SET conservation_status = 'Historic'
+WHERE discovery_date < '1800-01-01';
 
 -- Delete rangers who have never sighted any species
 
@@ -112,4 +118,15 @@ DELETE FROM rangers
 WHERE ranger_id NOT IN (
   SELECT DISTINCT ranger_id FROM sightings
 );
+
+-- Label each sighting's time of day as 'Morning', 'Afternoon', or 'Evening'.
+SELECT
+  sighting_id,
+  CASE
+    WHEN EXTRACT(HOUR FROM sighting_time) < 12 THEN 'Morning'
+    WHEN EXTRACT(HOUR FROM sighting_time) >= 12 AND EXTRACT(HOUR FROM sighting_time) < 17 THEN 'Afternoon'
+    ELSE 'Evening'
+  END AS time_of_day
+FROM sightings;
+
 
